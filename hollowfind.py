@@ -38,10 +38,12 @@ HOLLOW_TYPES = [
     "Suspicious Injection"
 ]
 
+
 def simple_disassemble(data, start_offset, is_64bit=True):
     md = Cs(CS_ARCH_X86, CS_MODE_64 if is_64bit else CS_MODE_32)
     for insn in md.disasm(data, start_offset):
         yield f"{insn.mnemonic} {insn.op_str}"
+
 
 class hollowfind(interfaces.plugins.PluginInterface):
     """
@@ -164,6 +166,91 @@ class hollowfind(interfaces.plugins.PluginInterface):
         except exceptions.InvalidAddressException:
             pass
         return False
+    def _scan_all_execute_vads(self, proc):
+        findings = []
+        try:
+            vad_root = proc.get_vad_root()
+            if not vad_root:
+                return findings
+
+            kernel = self.context.modules[self.config["kernel"]]
+
+            protect_values = vadinfo.VadInfo.protect_values(
+                self.context, kernel.layer_name, kernel.symbol_table_name
+            )
+
+            # Build list of known DLL base addresses
+            known_bases = set()
+            peb = proc.Peb
+            if peb and peb.Ldr:
+                for module in peb.Ldr.InLoadOrderModuleList:
+                    try:
+                        dll_base = module.DllBase
+                        if dll_base:
+                            known_bases.add(dll_base)
+                    except exceptions.InvalidAddressException:
+                        continue
+
+            for vad in vad_root.traverse():
+                try:
+                    start = vad.get_start()
+                    end = vad.get_end()
+                    protection = vad.get_protection(protect_values, vadinfo.winnt_protections)
+                    
+                    # Focus on RWX memory regions
+                    if protection == "PAGE_EXECUTE_READWRITE":
+                        # Skip VADs corresponding to known DLLs
+                        if start in known_bases:
+                            continue
+
+                        # Check first two bytes for MZ header
+                        task_layer = proc.add_process_layer()
+                        data = self.context.layers[task_layer].read(start, 2, pad=True)
+                        if data == b"MZ":
+                            findings.append(("Suspicious RWX VAD with MZ header", vad))
+                except exceptions.InvalidAddressException:
+                    continue
+
+        except exceptions.InvalidAddressException:
+            pass
+
+        return findings
+
+    def _scan_blind_rwx_mz_vads(self, proc):
+        findings = []
+        try:
+            vad_root = proc.get_vad_root()
+            if not vad_root:
+                return findings
+
+            for vad in vad_root.traverse():
+                kernel = self.context.modules[self.config["kernel"]]
+                prot = vad.get_protection(
+                    vadinfo.VadInfo.protect_values(
+                        self.context,
+                        kernel.layer_name,
+                        kernel.symbol_table_name,
+                    ),
+                    vadinfo.winnt_protections,
+                )
+                if prot == "PAGE_EXECUTE_READWRITE":
+                    # Read first 2 bytes
+                    try:
+                        task_layer = proc.add_process_layer()
+                        data = self.context.layers[task_layer].read(vad.get_start(), 2, pad=True)
+                        if data == b"MZ":
+                            findings.append((
+                                "[Blind] RWX Region with MZ header",
+                                vad
+                            ))
+                    except exceptions.InvalidAddressException:
+                        continue
+        except exceptions.InvalidAddressException:
+            pass
+
+        return findings
+
+
 
     def _detect_hollowing_or_injection(self, proc):
         """
@@ -202,11 +289,13 @@ class hollowfind(interfaces.plugins.PluginInterface):
                         continue
 
                 if exe_vad:
-                    prot = exe_vad.get_protection(protect_values, vadinfo.winnt_protections)
+                    prot = exe_vad.get_protection(
+                        protect_values, vadinfo.winnt_protections)
                     if prot != "PAGE_EXECUTE_WRITECOPY":
                         # show the process name in the message
                         proc_name = utility.array_to_string(proc.ImageFileName)
-                        findings.append((f"[{proc_name}] EXE => Unexpected protection ({prot})", exe_vad))
+                        findings.append(
+                            (f"[{proc_name}] EXE => Unexpected protection ({prot})", exe_vad))
 
             # now the DLL modules
             if peb and peb.Ldr:
@@ -226,10 +315,13 @@ class hollowfind(interfaces.plugins.PluginInterface):
                             except exceptions.InvalidAddressException:
                                 continue
                         if dll_vad:
-                            prot = dll_vad.get_protection(protect_values, vadinfo.winnt_protections)
+                            prot = dll_vad.get_protection(
+                                protect_values, vadinfo.winnt_protections)
                             if prot != "PAGE_EXECUTE_WRITECOPY":
-                                proc_name = utility.array_to_string(proc.ImageFileName)
-                                findings.append((f"[{proc_name}] DLL => Unexpected protection ({prot})", dll_vad))
+                                proc_name = utility.array_to_string(
+                                    proc.ImageFileName)
+                                findings.append(
+                                    (f"[{proc_name}] DLL => Unexpected protection ({prot})", dll_vad))
 
                     except exceptions.InvalidAddressException:
                         continue
@@ -256,9 +348,11 @@ class hollowfind(interfaces.plugins.PluginInterface):
             if dump_dir:
                 # Make sure dump_dir exists:
                 os.makedirs(dump_dir, exist_ok=True)
-                file_path = os.path.join(dump_dir, f"process.{pid}.{vad_start:#x}.dmp")
+                file_path = os.path.join(
+                    dump_dir, f"process.{pid}.{vad_start:#x}.dmp")
                 task_layer = proc.add_process_layer()
-                data = context.layers[task_layer].read(vad_start, 0x1000, pad=True)
+                data = context.layers[task_layer].read(
+                    vad_start, 0x1000, pad=True)
                 with open(file_path, "wb") as f:
                     f.write(data)
                 return file_path, hashlib.sha256(data).hexdigest(), data
@@ -307,24 +401,24 @@ rule hollowfind_{sha256_hash[:8]} {{
         except Exception as e:
             return str(e)
 
-    def _generate_html_report(self, rows, path):
+    def _generate_html_report(self, rows, html_path):
         template = Template(
             """
         <html><head><title>HollowFind Report</title></head><body>
         <h2>Suspicious Processes</h2>
         <table border="1">
-        <tr><th>PID</th><th>Name</th><th>PPID</th><th>Type</th><th>Hash</th><th>MITRE Tactic</th><th>YARA</th><th>VT Result</th></tr>
+        <tr><th>PID</th><th>Name</th><th>PPID</th><th>Type</th><th>VAD Filename</th><th>Hash</th><th>MITRE Tactic</th><th>YARA</th><th>VT Result</th></tr>
         {% for r in rows %}
-        <tr><td>{{r[0]}}</td><td>{{r[1]}}</td><td>{{r[2]}}</td><td>{{r[3]}}</td><td>{{r[14]}}</td><td>{{r[17]}}</td><td><pre>{{r[15]}}</pre></td><td>{{r[16]}}</td></tr>
+        <tr><td>{{r[0]}}</td><td>{{r[1]}}</td><td>{{r[2]}}</td><td>{{r[3]}}</td><td>{{r[6]|e}}</td><td>{{r[14]}}</td><td>{{r[17]}}</td><td><pre>{{r[15]}}</pre></td><td>{{r[16]}}</td></tr>
         {% endfor %}
         </table></body></html>
         """
         )
-        with open(path, "w") as f:
+        with open(html_path, "w") as f:
             f.write(template.render(rows=rows))
 
     # optional CSV
-    def _write_csv_report(self, rows, csv_path):
+    def _generate_csv_report(self, rows, csv_path):
         headers = [
             "PID",
             "Process Name",
@@ -352,7 +446,7 @@ rule hollowfind_{sha256_hash[:8]} {{
                 writer.writerow(row)
 
     # optional JSON
-    def _write_json_report(self, rows, json_path):
+    def _generate_json_report(self, rows, json_path):
         final = []
         for row in rows:
             # row is a tuple of 18 items
@@ -390,18 +484,17 @@ rule hollowfind_{sha256_hash[:8]} {{
 
     def _generator(self, results):
         for entry in results:
-            yield (0, entry)
-
+             yield (0, entry)
+            
     def run(self):
         kernel = self.context.modules[self.config["kernel"]]
         filter_pids = self.config.get("pid", None)
         cmd_filter = self.config.get("cmd_filter", None)
         html_path = self.config.get("html_report", None)
-        do_yara = self.config.get("yara_output", False)
-        do_vt = self.config.get("check_virustotal", False)
-
         csv_path = self.config.get("csv_report", None)
         json_path = self.config.get("json_report", None)
+        do_yara = self.config.get("yara_output", False)
+        do_vt = self.config.get("check_virustotal", False)
 
         proc_list = pslist.PsList.list_processes(
             context=self.context,
@@ -414,117 +507,118 @@ rule hollowfind_{sha256_hash[:8]} {{
         for proc in proc_list:
             pid = proc.UniqueProcessId
             if filter_pids and pid not in filter_pids:
-                continue
+                    continue
 
             name = utility.array_to_string(proc.ImageFileName)
             ppid = proc.InheritedFromUniqueProcessId
             peb_info = self._get_peb_info(proc)
 
             if cmd_filter and (
-                not peb_info or cmd_filter.lower() not in peb_info[0].lower()
+                    not peb_info or cmd_filter.lower() not in peb_info[0].lower()
             ):
-                continue
+                    continue
 
-            # detection function
             hollow_findings = self._detect_hollowing_or_injection(proc)
+            extra_findings = self._scan_all_execute_vads(proc)
+            extra_blind_findings = self._scan_blind_rwx_mz_vads(proc)
+            combined_findings = hollow_findings + extra_findings + extra_blind_findings
 
-            for (finding_msg, suspicious_vad) in hollow_findings:
-                ep_offset, disasm_data, disasm = self._dump_and_disassemble(
-                    self.context, proc, suspicious_vad
-                )
-                dumped_path, sha256_hash, raw_data = self._dump_memory(
-                    self.context, proc, suspicious_vad.get_start(), pid
-                )
 
-                yara_rule = ""
-                if do_yara and raw_data:
-                    yara_rule = self._generate_yara_rule(raw_data, sha256_hash)
-
-                vt_status = ""
-                if do_vt and sha256_hash:
-                    vt_status = self._query_virustotal(sha256_hash)
-
-                mitre = self._map_to_mitre(0)
-
-                hex_lines = []
-                if disasm_data:
-                    for i in range(0, len(disasm_data), 16):
-                        chunk = disasm_data[i : i+16]
-                        hex_bytes = " ".join(f"{b:02x}" for b in chunk)
-                        ascii_str = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
-                        hex_lines.append(f"{ep_offset + i:08x}  {hex_bytes:<48}  {ascii_str}")
-
-                prot = suspicious_vad.get_protection(
-                    vadinfo.VadInfo.protect_values(
-                        self.context,
-                        kernel.layer_name,
-                        kernel.symbol_table_name,
-                    ),
-                    vadinfo.winnt_protections,
-                ) or ""
-
-                raw_file_obj = suspicious_vad.get_file_name()
-                if not raw_file_obj or isinstance(raw_file_obj, renderers.NotApplicableValue):
-                    file_name = "<Non-File Backed Region>"
-                else:
-                    file_name = str(raw_file_obj)
-
-                tag = suspicious_vad.get_tag() or ""
-
-                results.append(
-                    (
-                        pid,
-                        name,
-                        ppid,
-                        finding_msg,
-                        peb_info[0] if peb_info else "",
-                        format_hints.Hex(peb_info[1]) if peb_info else format_hints.Hex(0),
-                        file_name,
-                        format_hints.Hex(suspicious_vad.get_start()),
-                        format_hints.Hex(suspicious_vad.get_end() - suspicious_vad.get_start()),
-                        prot,
-                        tag,
-                        "\n".join(disasm),
-                        "\n".join(hex_lines),
-                        dumped_path or "",
-                        sha256_hash or "",
-                        yara_rule.strip(),
-                        vt_status.strip(),
-                        mitre,
+            for (finding_msg, suspicious_vad) in combined_findings:
+                    ep_offset, disasm_data, disasm = self._dump_and_disassemble(
+                            self.context, proc, suspicious_vad
                     )
-                )
+                    dumped_path, sha256_hash, raw_data = self._dump_memory(
+                            self.context, proc, suspicious_vad.get_start(), pid
+                    )
 
-        # generate all reports if needed
+                    yara_rule = ""
+                    if do_yara and raw_data:
+                            yara_rule = self._generate_yara_rule(raw_data, sha256_hash)
+
+                    vt_status = ""
+                    if do_vt and sha256_hash:
+                            vt_status = self._query_virustotal(sha256_hash)
+
+                    mitre = self._map_to_mitre(0)
+
+                    hex_lines = []
+                    if disasm_data:
+                            for i in range(0, len(disasm_data), 16):
+                                    chunk = disasm_data[i : i + 16]
+                                    hex_bytes = " ".join(f"{b:02x}" for b in chunk)
+                                    ascii_str = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
+                                    hex_lines.append(
+                                            f"{ep_offset + i:08x}  {hex_bytes:<48}  {ascii_str}"
+                                    )
+
+                    prot = suspicious_vad.get_protection(
+                            vadinfo.VadInfo.protect_values(
+                                    self.context,
+                                    kernel.layer_name,
+                                    kernel.symbol_table_name,
+                            ),
+                            vadinfo.winnt_protections,
+                    ) or ""
+
+                    file_name_obj = suspicious_vad.get_file_name()
+                    file_name = "<Non-File Backed Region>" if (file_name_obj is None or isinstance(file_name_obj, renderers.NotApplicableValue)) else str(file_name_obj)
+                    tag = suspicious_vad.get_tag() or ""
+
+                    results.append(
+                            (
+                                    pid,
+                                    name,
+                                    ppid,
+                                    finding_msg,
+                                    peb_info[0] if peb_info else "",
+                                    format_hints.Hex(peb_info[1]) if peb_info else format_hints.Hex(0),
+                                    file_name,
+                                    format_hints.Hex(suspicious_vad.get_start()),
+                                    format_hints.Hex(
+                                            suspicious_vad.get_end() - suspicious_vad.get_start()
+                                    ),
+                                    prot,
+                                    tag,
+                                    "\n".join(disasm),
+                                    "\n".join(hex_lines),
+                                    dumped_path or "",
+                                    sha256_hash or "",
+                                    yara_rule.strip(),
+                                    vt_status.strip(),
+                                    mitre,
+                            )
+                    )
+
         if html_path:
             self._generate_html_report(results, html_path)
         if csv_path:
-            self._write_csv_report(results, csv_path)
+            self._generate_csv_report(results, csv_path)
         if json_path:
-            self._write_json_report(results, json_path)
+            self._generate_json_report(results, json_path)
         if do_yara:
             self._write_yara_batch(results)
 
-        # final render
         return renderers.TreeGrid(
             [
-                ("PID", int),
-                ("Process Name", str),
-                ("Parent PID", int),
-                ("Hollow Type", str),
-                ("Command Line (PEB)", str),
-                ("Base Address (PEB)", format_hints.Hex),
-                ("VAD Filename", str),
-                ("VAD Base Address", format_hints.Hex),
-                ("VAD Size", format_hints.Hex),
-                ("VAD Protection", str),
-                ("VAD Tag", str),
-                ("Disassembly", str),
-                ("Hex Dump", str),
-                ("Dump Path", str),
-                ("SHA256 Hash", str),
-                ("YARA Rule", str),
-                ("VirusTotal Result", str),
-                ("MITRE ATT&CK", str),
+                    ("PID", int),
+                    ("Process Name", str),
+                    ("Parent PID", int),
+                    ("Hollow Type", str),
+                    ("Command Line (PEB)", str),
+                    ("Base Address (PEB)", format_hints.Hex),
+                    ("VAD Filename", str),
+                    ("VAD Base Address", format_hints.Hex),
+                    ("VAD Size", format_hints.Hex),
+                    ("VAD Protection", str),
+                    ("VAD Tag", str),
+                    ("Disassembly", str),
+                    ("Hex Dump", str),
+                    ("Dump Path", str),
+                    ("SHA256 Hash", str),
+                    ("YARA Rule", str),
+                    ("VirusTotal Result", str),
+                    ("MITRE ATT&CK", str),
             ],
             ((0, r) for r in results),
         )
