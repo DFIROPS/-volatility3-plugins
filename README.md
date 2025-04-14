@@ -118,3 +118,106 @@ Only check a single PID with a command line filter:
 python3 vol.py -f stuxnet.vmem windows.hollowfind \
     --pid 11712 \
     --cmd-filter "lsass.exe"
+
+
+
+SAMPLE Output 1:
+
+rootx@DFIRBoxWSL:~$ python3 ~/volatility3-2.11.0/vol.py --clear-cache -f /mnt/c/Users/user/Desktop/stuxnet.vmem windows.hollowfind --dump-dir /mnt/c/Users/user/Desktop/dumps --yara-output --check-virustotal --csv-report /mnt/c/Users/user/Desktop/out.csv --json-report /mnt/c/Users/user/Desktop/out.json --html-report /mnt/c/Users/user/Desktop/out.html
+
+Volatility 3 Framework 2.11.0
+WARNING  volatility3.framework.layers.vmware: No metadata file found alongside VMEM file. A VMSS or VMSN file may be required to correctly process a VMEM file. These should be placed in the same directory with the same file name, e.g. stuxnet.vmem and stuxnet.vmss.
+Progress:  100.00               PDB scanning finished
+PID     Process Name    Parent PID      Hollow Type     Command Line (PEB)      Base Address (PEB)      VAD Filename    VAD Base Address        VAD Size    VAD Protection   VAD Tag Disassembly     Hex Dump        Dump Path       SHA256 Hash     YARA Rule       VirusTotal Result       MITRE ATT&CK
+
+868     lsass.exe       668     [lsass.exe] EXE => Unexpected protection (PAGE_EXECUTE_READWRITE)               0x0     <Non-File Backed Region>        0x1000000    0x5fff  PAGE_EXECUTE_READWRITE  Vad     dec ebp
+pop edx
+nop
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al  01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................    /mnt/c/Users/bedan/Desktop/dumps/process.868.0x1000000.dmp      68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760     rule hollowfind_68269b89 {
+    strings:
+        $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+    condition:
+        $code
+}       Error 404       Defense Evasion - T1055
+1928    lsass.exe       668     [lsass.exe] EXE => Unexpected protection (PAGE_EXECUTE_READWRITE)               0x0     <Non-File Backed Region>        0x1000000    0x5fff  PAGE_EXECUTE_READWRITE  Vad     dec ebp
+pop edx
+nop
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al  01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................    /mnt/c/Users/bedan/Desktop/dumps/process.1928.0x1000000.dmp     68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760     rule hollowfind_68269b89 {
+    strings:
+        $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+    condition:
+        $code
+}       Error 404       Defense Evasion - T1055
+
+
+SAMPLE Output 2:
+
+Volatility 3 Framework 2.11.0
+WARNING  volatility3.framework.layers.vmware: No metadata file found alongside VMEM file. A VMSS or VMSN file may be required to correctly process a VMEM file. These should be placed in the same directory with the same file name, e.g. stuxnet.vmem and stuxnet.vmss.
+Progress:  100.00               PDB scanning finished
+PID     Process Name    Parent PID      Hollow Type     Command Line (PEB)      Base Address (PEB)      VAD Filename    VAD Base Address        VAD Size    VAD Protection   VAD Tag Disassembly     Hex Dump        Dump Path       SHA256 Hash     YARA Rule       VirusTotal Result       MITRE ATT&CK
+
+868     lsass.exe       668     [lsass.exe] EXE => Unexpected protection (PAGE_EXECUTE_READWRITE)               0x0     <Non-File Backed Region>        0x1000000    0x5fff  PAGE_EXECUTE_READWRITE  Vad     dec ebp
+pop edx
+nop
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al  01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................    /mnt/c/Users/bedan/Desktop/dumps/process.868.0x1000000.dmp      68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760     rule hollowfind_68269b89 {
+    strings:
+        $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+    condition:
+        $code
+}       Error 404       Defense Evasion - T1055
+1928    lsass.exe       668     [lsass.exe] EXE => Unexpected protection (PAGE_EXECUTE_READWRITE)               0x0     <Non-File Backed Region>        0x1000000    0x5fff  PAGE_EXECUTE_READWRITE  Vad     dec ebp
+pop edx
+nop
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al  01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................    /mnt/c/Users/bedan/Desktop/dumps/process.1928.0x1000000.dmp     68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760     rule hollowfind_68269b89 {
+    strings:
+        $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+    condition:
+        $code
+}       Error 404       Defense Evasion - T1055
+rootx@DFIRBoxWSL:~$ python3 ~/volatility3-2.11.0/vol.py --clear-cache -f /mnt/c/Users/bedan/Desktop/hollow1.dmp windows.hollowfind --dump-dir /mnt/c/Users/be
+dan/Desktop/dumps --yara-output --check-virustotal --csv-report /mnt/c/Users/bedan/Desktop/out.csv --json-report /mnt/c/Users/bedan/Desktop/out.json --html-r
+eport /mnt/c/Users/bedan/Desktop/out.html
+Volatility 3 Framework 2.11.0
+Progress:  100.00               PDB scanning finished
+PID     Process Name    Parent PID      Hollow Type     Command Line (PEB)      Base Address (PEB)      VAD Filename    VAD Base Address        VAD Size    VAD Protection   VAD Tag Disassembly     Hex Dump        Dump Path       SHA256 Hash     YARA Rule       VirusTotal Result       MITRE ATT&CK
+
+11712   lsass.exe       7772    [lsass.exe] EXE => Unexpected protection (PAGE_EXECUTE_READWRITE)               0x0     <Non-File Backed Region>        0x7ff7183e0000       0x4fff  PAGE_EXECUTE_READWRITE  VadS    dec ebp
+pop edx
+nop
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al  7ff7183e0000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+7ff7183e0010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+7ff7183e0020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+7ff7183e0030  00 00 00 00 00 00 00 00 00 00 00 00 c8 00 00 00   ................        /mnt/c/Users/bedan/Desktop/dumps/process.11712.0x7ff7183e0000.dmp   d3a8e573043f3f76f92a25c562531d93b3894abfd943a5dd679a5b412e8bfb41 rule hollowfind_d3a8e573 {
+    strings:
+        $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+    condition:
+        $code
+}       Detected by 12 engines  Defense Evasion - T1055
