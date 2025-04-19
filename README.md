@@ -1,7 +1,6 @@
 # ProcSentinel
 
 **Plugin:** `windows.procsentinel`  
-**Class:** `ProcSentinel`  
 
 A Volatility 3 plugin that:
 - Scans running Windows processes for memory‑based anomalies (hollow/process injection, suspicious RWX regions, etc.)  
@@ -24,8 +23,8 @@ A Volatility 3 plugin that:
 ```bash
 vol.py -f <MEMORY_IMAGE> windows.procsentinel [OPTIONS]
 
-Common Options
-
+## Common Options
+```bash
 Flag | Description
 --pid <PID1,PID2,…> | Only scan processes with these PIDs
 --dump-dir <DIR> | Directory to write dumped memory pages
@@ -47,8 +46,8 @@ vol.py \
     --html-report ~/out/ps_sentinel.html \
     -vvvvv --log ~/out/ps_sentinel.log
 
-This will:
-
+## This will:
+```bash
 Scan all processes for memory anomalies.
 
 Check for singleton‑process duplicates (e.g. multiple lsass.exe).
@@ -58,5 +57,3 @@ Dump suspect pages into ~/dumps/ps_sentinel/.
 Emit YARA rules and VT results.
 
 Produce CSV, JSON, and HTML summaries.
-
-Capture full debug output in ~/out/ps_sentinel.log
