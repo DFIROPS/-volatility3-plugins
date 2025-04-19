@@ -47,7 +47,7 @@ vol.py \
     -vvvvv --log ~/out/ps_sentinel.log
 
 ## This will:
-```bash
+
 Scan all processes for memory anomalies.
 
 Check for singleton‑process duplicates (e.g. multiple lsass.exe).
