@@ -1,0 +1,196 @@
+
+        <html><head><title>Process Sentinel Report</title></head><body>
+          <h2>Hollowed/Injected Processes</h2>
+          <table border="1" width="100%">
+            <tr><th>PID</th><th>Process Name</th><th>Parent PID</th><th>Hollow Type</th><th>Command Line (PEB)</th><th>Base Address (PEB)</th><th>VAD Filename</th><th>VAD Base Address</th><th>VAD Size</th><th>VAD Protection</th><th>VAD Tag</th><th>Disassembly</th><th>Hex Dump</th><th>Dump Path</th><th>SHA256 Hash</th><th>YARA Rule</th><th>VirusTotal Result</th><th>MITRE ATT&CK</th></tr>
+            
+              
+                <tr><td>668</td><td>services.exe</td><td>624</td><td>[Blind] RWX Region with MZ header</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>13f0000</td><td>137fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>013f0000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+013f0010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+013f0020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+013f0030  00 00 00 00 00 00 00 00 00 00 00 00 08 01 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_services.exe_013f0000_Image.dmp</td><td>84b9f3d7793b569ed077dff1fda50b866831eca4c993292334a7bfdc736e5565</td><td>rule hollowfind_84b9f3d7 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 5 engines</td><td>Masquerading - T1036</td></tr>
+              
+                <tr><td>940</td><td>svchost.exe</td><td>668</td><td>[Blind] RWX Region with MZ header</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>d00000</td><td>137fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>00d00000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+00d00010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+00d00020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+00d00030  00 00 00 00 00 00 00 00 00 00 00 00 08 01 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_svchost.exe_00d00000_Image.dmp</td><td>57dfb4301aea26f11541348013e1acb0262e9d58ead70ad5ec81b8e5599fe2df</td><td>rule hollowfind_57dfb430 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 4 engines</td><td>Masquerading - T1036</td></tr>
+              
+                <tr><td>868</td><td>lsass.exe</td><td>668</td><td>[lsass.exe] EXE => Unexpected protection (PAGE_EXECUTE_READWRITE)</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>1000000</td><td>5fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_lsass.exe_01000000_Image.dmp</td><td>68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760</td><td>rule hollowfind_68269b89 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 12 engines</td><td>Masquerading - T1036</td></tr>
+              
+                <tr><td>868</td><td>lsass.exe</td><td>668</td><td>[Blind] RWX Region with MZ header</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>80000</td><td>79fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>00080000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+00080010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+00080020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+00080030  00 00 00 00 00 00 00 00 00 00 00 00 08 01 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_lsass.exe_00080000_Image.dmp</td><td>f378a3e457b23c5c80f8513716e790e3caec09ba97cf8ebb8c20103a3642c705</td><td>rule hollowfind_f378a3e4 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 4 engines</td><td>Masquerading - T1036</td></tr>
+              
+                <tr><td>868</td><td>lsass.exe</td><td>668</td><td>[Blind] RWX Region with MZ header</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>1000000</td><td>5fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_lsass.exe_01000000_Image.dmp</td><td>68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760</td><td>rule hollowfind_68269b89 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 12 engines</td><td>Masquerading - T1036</td></tr>
+              
+                <tr><td>1928</td><td>lsass.exe</td><td>668</td><td>[lsass.exe] EXE => Unexpected protection (PAGE_EXECUTE_READWRITE)</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>1000000</td><td>5fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_lsass.exe_01000000_Image.dmp</td><td>68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760</td><td>rule hollowfind_68269b89 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 12 engines</td><td>Masquerading - T1036</td></tr>
+              
+                <tr><td>1928</td><td>lsass.exe</td><td>668</td><td>[Blind] RWX Region with MZ header</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>80000</td><td>79fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>00080000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+00080010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+00080020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+00080030  00 00 00 00 00 00 00 00 00 00 00 00 08 01 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_lsass.exe_00080000_Image.dmp</td><td>f378a3e457b23c5c80f8513716e790e3caec09ba97cf8ebb8c20103a3642c705</td><td>rule hollowfind_f378a3e4 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 4 engines</td><td>Masquerading - T1036</td></tr>
+              
+                <tr><td>1928</td><td>lsass.exe</td><td>668</td><td>[Blind] RWX Region with MZ header</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>1000000</td><td>5fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_lsass.exe_01000000_Image.dmp</td><td>68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760</td><td>rule hollowfind_68269b89 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 12 engines</td><td>Masquerading - T1036</td></tr>
+              
+                <tr><td>1928</td><td>lsass.exe</td><td>668</td><td>[Blind] RWX Region with MZ header</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>870000</td><td>137fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>00870000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+00870010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+00870020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+00870030  00 00 00 00 00 00 00 00 00 00 00 00 08 01 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_lsass.exe_00870000_Image.dmp</td><td>0ad4748117e6c4bd101ab10197b1a6c6f6e7c8a62f73aa6eebea4f08589b5f9d</td><td>rule hollowfind_0ad47481 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 5 engines</td><td>Masquerading - T1036</td></tr>
+              
+            
+          </table>
+
+          <h2>PROCESS‑ANOMALIES</h2>
+          <table border="1" width="100%">
+            <tr><th>PID</th><th>Process Name</th><th>Parent PID</th><th>Anomaly Type</th><th>Command Line (PEB)</th><th>Base Address (PEB)</th><th>VAD Filename</th><th>VAD Base Address</th><th>VAD Size</th><th>VAD Protection</th><th>VAD Tag</th><th>Disassembly</th><th>Hex Dump</th><th>Dump Path</th><th>SHA256 Hash</th><th>YARA Rule</th><th>VirusTotal Result</th><th>MITRE ATT&CK</th></tr>
+            
+              
+                <tr><td>868</td><td>lsass.exe</td><td>668</td><td>SUSPICIOUS->INVESTIGATE (Multiple Instances of Singleton Process)</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>1000000</td><td>5fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_lsass.exe_01000000_Image.dmp</td><td>68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760</td><td>rule hollowfind_68269b89 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 12 engines</td><td>Masquerading - T1036</td></tr>
+              
+                <tr><td>1928</td><td>lsass.exe</td><td>668</td><td>SUSPICIOUS->INVESTIGATE (Multiple Instances of Singleton Process)</td><td>Not Detected</td><td>Not Detected</td><td>Memory‑only region (No VAD Mapping)</td><td>1000000</td><td>5fff</td><td>PAGE_EXECUTE_READWRITE</td><td>Vad </td><td>dec ebp
+pop edx
+nop 
+add byte ptr [ebx], al
+add byte ptr [eax], al
+add byte ptr [eax + eax], al
+add byte ptr [eax], al</td><td>01000000  4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00   MZ..............
+01000010  b8 00 00 00 00 00 00 00 40 00 00 00 00 00 00 00   ........@.......
+01000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+01000030  00 00 00 00 00 00 00 00 00 00 00 00 d0 00 00 00   ................</td><td>/mnt/c/Users/bedan/Desktop/dumps/Suspicious_lsass.exe_01000000_Image.dmp</td><td>68269b89dd69967adbd8891e3f3eeea42c11b1278bc7fb1735c420b677010760</td><td>rule hollowfind_68269b89 {
+            strings:
+                $code = { 4d 5a 90 00 03 00 00 00 04 00 00 00 ff ff 00 00 }
+            condition:
+                $code
+        }</td><td>Detected by 12 engines</td><td>Masquerading - T1036</td></tr>
+              
+            
+          </table>
+          <footer>Memory Analysis Report Generated By Process Sentinel Plugin</footer>
+        </body></html>
+        
