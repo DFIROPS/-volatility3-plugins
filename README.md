@@ -2,6 +2,8 @@
 
 **Plugin:** `windows.procsentinel`  
 
+SHA256:   A8744535EDB14C9CC17C6DAEE0717646BCD6939877907091DCA60FE1FB37A040
+
 A Volatility 3 plugin that:
 - Scans running Windows processes for memory‑based anomalies (hollow/process injection, suspicious RWX regions, etc.)  
 - Detects singleton‑process anomalies (e.g. duplicate `csrss.exe`, `lsass.exe`, etc.)  
